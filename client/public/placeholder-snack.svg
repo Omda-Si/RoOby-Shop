@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f8d4e3"/>
+  <circle cx="200" cy="150" r="70" fill="#e84a7f"/>
+  <circle cx="200" cy="150" r="38" fill="#fff1f6"/>
+  <text x="200" y="250" text-anchor="middle" fill="#7a3d58" font-family="Tahoma" font-size="22">RoOby</text>
+</svg>
