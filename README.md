@@ -2,6 +2,8 @@
 
 Homemade sweets shop. The storefront is Arabic RTL. Customers order on WhatsApp. There is no card checkout.
 
+**Live demo:** [https://roobysweets.netlify.app](https://roobysweets.netlify.app)
+
 The shop and the admin dashboard live in the same site:
 
 - Shop: `/`
@@ -30,7 +32,8 @@ Then open:
 
 - Shop: http://localhost:5173
 - Admin: http://localhost:5173/admin
-- Default login: `admin` / `rooby2026`
+
+Use the admin username and password from your local `.env` file. Do not commit that file.
 
 Stop the servers with `Ctrl+C`. That frees ports `5173` (shop) and `4000` (API).
 
@@ -83,10 +86,9 @@ Later code pushes to `main` rebuild the Netlify site automatically if the site i
    - **Build Command:** `npm install`
    - **Start Command:** `npm start`
 4. Environment variables:
-   - `CLIENT_ORIGIN` = the Netlify URL, for example `https://rooby.netlify.app`
+   - `CLIENT_ORIGIN` = the Netlify URL, for example `https://roobysweets.netlify.app`
    - `JWT_SECRET` = a long secret string
-   - `ADMIN_USERNAME` = `admin`
-   - `ADMIN_PASSWORD` = your password
+   - `ADMIN_USERNAME` and `ADMIN_PASSWORD` = your private admin login (set these only on the server)
 5. Create the service and copy the URL, for example `https://rooby-api.onrender.com`.
 
 The free Render plan sleeps after idle time and can wipe files. For lasting admin data, add a **Persistent Disk** or use Railway.
@@ -104,7 +106,7 @@ When the Netlify URL is ready, set `CLIENT_ORIGIN` on Render to that URL and res
 
 ### URLs after deploy
 
-- Shop: `https://YOUR-SITE.netlify.app`
-- Admin: `https://YOUR-SITE.netlify.app/admin`
+- Shop: [https://roobysweets.netlify.app](https://roobysweets.netlify.app)
+- Admin: [https://roobysweets.netlify.app/admin](https://roobysweets.netlify.app/admin)
 
 Both talk to the same API. When admin changes products, news, special orders, festivals, or approved comments, customers see it on the shop.
