@@ -14,7 +14,12 @@ export function ProductCard({ product, index = 0 }) {
       style={{ "--stagger": index }}
     >
       <div className="product-media">
-        <img src={productImage(product.image_url)} alt={product.name_ar} />
+        <img
+          src={productImage(product.image_url)}
+          alt={product.name_ar}
+          loading={index < 3 ? "eager" : "lazy"}
+          decoding="async"
+        />
         <span className={`badge ${product.is_open ? "open" : "sold"}`}>{product.status_label}</span>
       </div>
       <div className="product-body">

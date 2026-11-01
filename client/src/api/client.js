@@ -1,14 +1,39 @@
-const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_BASE = String(import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const CATALOG_KEY = "rooby-catalog";
+
+export function readCachedCatalog() {
+  try {
+    const raw = window.localStorage.getItem(CATALOG_KEY);
+    const data = raw ? JSON.parse(raw) : null;
+    if (!Array.isArray(data?.categories) || !Array.isArray(data?.products)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCachedCatalog(data) {
+  try {
+    window.localStorage.setItem(CATALOG_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore full or private storage.
+  }
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
+    credentials: API_BASE ? "include" : "same-origin",
     headers: {
       ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
       ...options.headers
     },
     ...options
   });
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("المتجر لسه بيتجهز. حدّث الصفحة بعد لحظات.");
+  }
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -18,7 +43,13 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  catalog: () => request("/api/catalog"),
+  catalog: async () => {
+    const data = await request("/api/catalog");
+    if (!Array.isArray(data?.categories) || !Array.isArray(data?.products)) {
+      throw new Error("المتجر لسه بيتجهز. حدّث الصفحة بعد لحظات.");
+    }
+    return data;
+  },
   login: (username, password) =>
     request("/api/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
   logout: () => request("/api/auth/logout", { method: "POST" }),

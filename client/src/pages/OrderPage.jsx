@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client.js";
+import { useCatalog } from "../hooks/useCatalog.js";
 import { Footer } from "../components/Footer.jsx";
 import { Header } from "../components/Header.jsx";
 import { QuantityStepper } from "../components/QuantityStepper.jsx";
@@ -10,11 +10,8 @@ import { buildWhatsAppUrl } from "../utils/whatsapp.js";
 
 export function OrderPage() {
   const { items, total, setQty, remove } = useOrder();
-  const [settings, setSettings] = useState(null);
-
-  useEffect(() => {
-    api.catalog().then((data) => setSettings(data.settings));
-  }, []);
+  const { data } = useCatalog();
+  const settings = data?.settings;
 
   async function sendWhatsApp() {
     const url = buildWhatsAppUrl(settings?.whatsapp_number, settings?.shop_name || "RoOby", items);

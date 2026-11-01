@@ -6,9 +6,25 @@
     <meta name="theme-color" content="#5B2A86" />
     <title>RoOby — متجر حلويات أونلاين</title>
     <link rel="icon" href="/logo.png" />
+    <link rel="preload" href="/logo.png" as="image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=El+Messiri:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      html, body, #root { min-height: 100%; margin: 0; background: #f3e8ff; }
+      #root:empty {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "IBM Plex Sans Arabic", sans-serif;
+        color: #5b2a86;
+      }
+      #root:empty::before {
+        content: "RoOby";
+        font-size: 2rem;
+        font-weight: 700;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

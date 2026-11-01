@@ -12,7 +12,7 @@
   --line: rgba(43, 22, 80, 0.1);
   --shadow: 0 16px 40px rgba(91, 42, 134, 0.16);
   --radius: 24px;
-  --display: "El Messiri", "Amiri", serif;
+  --display: "Amiri", "Times New Roman", serif;
   --naskh: "Amiri", "Times New Roman", serif;
   --body: "IBM Plex Sans Arabic", "Tajawal", sans-serif;
 }
@@ -339,9 +339,16 @@ img {
   overflow: hidden;
   min-height: 100%;
   transform: none;
-  animation: riseIn 0.5s ease both;
-  animation-delay: calc(var(--stagger, 0) * 50ms);
+  opacity: 1;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-skeleton {
+  min-height: 340px;
+  border-radius: 22px;
+  background: linear-gradient(90deg, #fff8e8 20%, #ffe56a 50%, #fff8e8 80%);
+  background-size: 180% 100%;
+  animation: footerShine 1.4s linear infinite;
 }
 
 .product-card:hover,
@@ -533,7 +540,7 @@ img {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(8px);
+  filter: blur(2px);
 }
 
 .footer-glow-a {
@@ -1052,7 +1059,7 @@ img {
 }
 
 @keyframes riseIn {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0.4; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1095,7 +1102,10 @@ img {
   .footer-logo,
   .footer-glow,
   .footer-shine,
-  .chip-whatsapp {
+  .chip-whatsapp,
+  .app-shell,
+  .product-skeleton,
+  .feedback-card {
     animation: none;
   }
 }

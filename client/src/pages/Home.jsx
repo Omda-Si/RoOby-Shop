@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../api/client.js";
 import { FeedbackSection } from "../components/FeedbackSection.jsx";
 import { Footer } from "../components/Footer.jsx";
 import { Header } from "../components/Header.jsx";
@@ -9,37 +8,14 @@ import { OrderTray } from "../components/OrderTray.jsx";
 import { ProductGrid } from "../components/ProductGrid.jsx";
 import { ShopNotices } from "../components/ShopNotices.jsx";
 import { useOrder } from "../context/OrderContext.jsx";
+import { useCatalog } from "../hooks/useCatalog.js";
 import { formatArabicTime } from "../utils/format.js";
 
 export function Home() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const { data, error, loading, refresh } = useCatalog();
   const [active, setActive] = useState("all");
   const { notice, count } = useOrder();
-
-  useEffect(() => {
-    let alive = true;
-
-    function load() {
-      api
-        .catalog()
-        .then((payload) => {
-          if (alive) setData(payload);
-        })
-        .catch((err) => {
-          if (alive) setError(err.message);
-        });
-    }
-
-    load();
-    const timer = window.setInterval(load, 12000);
-    window.addEventListener("focus", load);
-    return () => {
-      alive = false;
-      window.clearInterval(timer);
-      window.removeEventListener("focus", load);
-    };
-  }, []);
+  const categories = data?.categories || [];
 
   const filtered = useMemo(() => {
     const list = data?.today || [];
@@ -71,13 +47,12 @@ export function Home() {
             <p>{data.settings.daily_news}</p>
           </aside>
         ) : null}
-        {error ? <p className="muted">{error}</p> : null}
-        {!data && !error ? <p className="muted">جاري تحميل قائمة اليوم...</p> : null}
+        {error && !data ? <p className="muted">{error}</p> : null}
         <div className="pills">
           <button className={`pill ${active === "all" ? "active" : ""}`} onClick={() => setActive("all")}>
             الكل
           </button>
-          {data?.categories.map((category) => (
+          {categories.map((category) => (
             <button
               key={category.id}
               className={`pill ${active === category.slug ? "active" : ""}`}
@@ -87,7 +62,7 @@ export function Home() {
             </button>
           ))}
         </div>
-        <ProductGrid products={filtered} />
+        <ProductGrid products={filtered} loading={loading && !data} />
       </section>
 
       <section className="section container" id="categories">
@@ -95,17 +70,14 @@ export function Home() {
           <h2>التصنيفات</h2>
         </div>
         <div className="categories-row">
-          {data?.categories.map((category) => (
+          {categories.map((category) => (
             <Link key={category.id} className="category-tile" to={`/category/${category.slug}`}>
               {category.name_ar}
             </Link>
           ))}
         </div>
       </section>
-      <FeedbackSection
-        feedbacks={data?.feedbacks || []}
-        onSubmitted={() => api.catalog().then(setData)}
-      />
+      <FeedbackSection feedbacks={data?.feedbacks || []} onSubmitted={refresh} />
       <OrderTray />
       <Footer settings={data?.settings} />
     </div>

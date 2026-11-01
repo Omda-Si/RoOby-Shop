@@ -35,6 +35,8 @@ export function Hero({ settings, featured }) {
             className="hero-photo"
             src={productImage(spotlight?.image_url)}
             alt={spotlight?.name_ar || "منتج اليوم"}
+            fetchPriority="high"
+            decoding="async"
           />
         </div>
         {spotlight ? (
