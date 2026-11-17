@@ -393,6 +393,15 @@ export async function uploadBlobStore() {
   return getStore("rooby-uploads");
 }
 
+function applyEnvAdmin(shop) {
+  shop.admin = {
+    id: shop.admin?.id || 1,
+    username: config.adminUsername,
+    password_hash: bcrypt.hashSync(config.adminPassword, 10)
+  };
+  return shop;
+}
+
 export async function readShop() {
   if (useBlobStore()) {
     const store = await shopBlobStore();
@@ -401,7 +410,11 @@ export async function readShop() {
       shop = fs.existsSync(shopPath)
         ? JSON.parse(fs.readFileSync(shopPath, "utf8"))
         : defaultShop();
+      applyEnvAdmin(shop);
       await store.setJSON("shop", shop);
+    } else if (process.env.ADMIN_RESET === "1") {
+      applyEnvAdmin(shop);
+      await writeShop(shop);
     }
     const normalized = normalizeShop(shop);
     if (normalized.changed) {
