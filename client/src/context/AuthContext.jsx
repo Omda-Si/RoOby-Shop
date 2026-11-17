@@ -46,7 +46,8 @@ export function AuthProvider({ children }) {
         async logout() {
           await api.logout();
           setUser(null);
-        }
+        },
+        setUser
       }}
     >
       {children}

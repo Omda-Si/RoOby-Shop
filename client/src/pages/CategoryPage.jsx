@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { BottomNav } from "../components/BottomNav.jsx";
 import { Footer } from "../components/Footer.jsx";
 import { Header } from "../components/Header.jsx";
 import { OrderTray } from "../components/OrderTray.jsx";
@@ -14,11 +15,11 @@ export function CategoryPage() {
   const products = (data?.products || []).filter((item) => item.category_slug === slug);
 
   return (
-    <div className={`app-shell ${count ? "has-tray" : ""}`}>
+    <div className={`app-shell foodcort-shell ${count ? "has-tray" : ""}`}>
       <Header shopName={data?.settings?.shop_name} />
       {notice ? <div className="notice">{notice}</div> : null}
       <section className="section container">
-        <Link to="/" className="muted">
+        <Link to="/" className="muted back-link">
           رجوع للمتجر
         </Link>
         <div className="section-head">
@@ -28,6 +29,7 @@ export function CategoryPage() {
       </section>
       <OrderTray />
       <Footer settings={data?.settings} />
+      <BottomNav />
     </div>
   );
 }

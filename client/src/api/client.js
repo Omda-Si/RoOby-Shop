@@ -87,6 +87,8 @@ export const api = {
   settings: () => request("/api/admin/settings"),
   saveSettings: (payload) =>
     request("/api/admin/settings", { method: "PUT", body: JSON.stringify(payload) }),
+  updateAccount: (payload) =>
+    request("/api/admin/account", { method: "PUT", body: JSON.stringify(payload) }),
   sendFeedback: (payload) =>
     request("/api/feedback", { method: "POST", body: JSON.stringify(payload) }),
   recordOrder: (items) =>

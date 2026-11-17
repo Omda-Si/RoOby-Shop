@@ -5,18 +5,11 @@ export function Footer({ settings }) {
 
   return (
     <footer className="site-footer">
-      <span className="footer-glow footer-glow-a" />
-      <span className="footer-glow footer-glow-b" />
-      <span className="footer-shine" />
       <div className="container footer-grid">
         <div className="footer-brand">
           <img className="footer-logo" src="/logo.png" alt={shopName} />
           <h3>{shopName}</h3>
           <p>{settings?.about}</p>
-          <span className="live-pill footer-live">
-            <span className="live-dot" />
-            المتجر أونلاين • جاهز للطلب
-          </span>
         </div>
         <div className="footer-col">
           <h4>تواصل معنا</h4>
@@ -29,14 +22,11 @@ export function Footer({ settings }) {
             <a className="footer-chip chip-whatsapp" href={`https://wa.me/${whatsapp}`}>
               واتساب الطلبات
             </a>
-            <a className="footer-chip chip-tiktok" href={tiktok} target="_blank" rel="noreferrer">
+            <a className="footer-chip" href={tiktok} target="_blank" rel="noreferrer">
               تيك توك
             </a>
             <a className="footer-chip" href="/#special">
               طلب خاص
-            </a>
-            <a className="footer-chip" href="/#festival">
-              المناسبات والأعياد
             </a>
           </div>
         </div>

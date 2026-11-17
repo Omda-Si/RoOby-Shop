@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { requireAdmin } from "../middleware/auth.js";
+import bcrypt from "bcryptjs";
+import { requireAdmin, setAuthCookie, signAdminToken } from "../middleware/auth.js";
 import { uploadProductImage } from "../middleware/upload.js";
 import { enrichProduct, readShop, updateShop } from "../store.js";
 import { serializeProduct, slugify } from "../utils/product.js";
@@ -322,4 +323,43 @@ adminRouter.put("/settings", (req, res) => {
     return shop.settings;
   });
   res.json(saved);
+});
+
+adminRouter.put("/account", async (req, res) => {
+  const currentPassword = String(req.body?.current_password || "");
+  const newUsername = String(req.body?.username || "").trim();
+  const newPassword = String(req.body?.new_password || "");
+  const confirmPassword = String(req.body?.confirm_password || "");
+
+  if (!currentPassword) {
+    return res.status(400).json({ error: "اكتب كلمة المرور الحالية" });
+  }
+  if (!newUsername || newUsername.length < 3) {
+    return res.status(400).json({ error: "اسم المستخدم لازم يكون 3 حروف على الأقل" });
+  }
+  if (newPassword && newPassword.length < 6) {
+    return res.status(400).json({ error: "كلمة المرور الجديدة لازم تكون 6 حروف على الأقل" });
+  }
+  if (newPassword && newPassword !== confirmPassword) {
+    return res.status(400).json({ error: "تأكيد كلمة المرور غير مطابق" });
+  }
+
+  const shop = readShop();
+  const admin = shop.admin;
+  if (!admin || !(await bcrypt.compare(currentPassword, admin.password_hash))) {
+    return res.status(401).json({ error: "كلمة المرور الحالية غير صحيحة" });
+  }
+
+  const updated = updateShop((current) => {
+    current.admin.username = newUsername;
+    if (newPassword) {
+      current.admin.password_hash = bcrypt.hashSync(newPassword, 10);
+    }
+    current.settings.updated_at = new Date().toISOString();
+    return current.admin;
+  });
+
+  const token = signAdminToken(updated);
+  setAuthCookie(res, token);
+  res.json({ username: updated.username });
 });

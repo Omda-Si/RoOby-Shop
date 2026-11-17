@@ -18,7 +18,7 @@ export function ShopNotices({ settings }) {
     <section className="section container shop-notices" id="notices">
       <div className="notice-grid">
         {showFestival ? (
-          <article className="shop-notice festival-notice" id="festival">
+          <article className="offer-card festival-notice" id="festival">
             <span className="notice-kicker">خبر المناسبة</span>
             <h3>{settings.festival_title || "مناسبات وأعياد"}</h3>
             <p>{settings.festival_note}</p>
@@ -31,22 +31,22 @@ export function ShopNotices({ settings }) {
               target="_blank"
               rel="noreferrer"
             >
-              اسأل عن المناسبة في واتساب
+              اسأل في واتساب
             </a>
           </article>
         ) : null}
         {showSpecial ? (
-          <article className="shop-notice special-notice" id="special">
+          <article className="offer-card special-notice" id="special">
             <span className="notice-kicker">طلب خاص</span>
             <h3>هل تريد طلب مخصوص؟</h3>
             <p>{settings.special_order_note}</p>
             <a
-              className="btn btn-green"
+              className="btn btn-dark"
               href={buildCustomWhatsAppUrl(phone, specialOrderMessage(shopName, settings.special_order_note))}
               target="_blank"
               rel="noreferrer"
             >
-              اطلب طلب خاص عبر واتساب
+              اطلب عبر واتساب
             </a>
           </article>
         ) : null}

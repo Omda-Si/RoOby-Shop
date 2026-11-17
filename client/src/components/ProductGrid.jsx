@@ -3,7 +3,7 @@ import { ProductCard } from "./ProductCard.jsx";
 export function ProductGrid({ products, loading = false }) {
   if (loading) {
     return (
-      <div className="product-mosaic" aria-busy="true">
+      <div className="food-grid" aria-busy="true">
         {Array.from({ length: 6 }, (_, index) => (
           <div className="product-skeleton" key={index} />
         ))}
@@ -16,7 +16,7 @@ export function ProductGrid({ products, loading = false }) {
   }
 
   return (
-    <div className="product-mosaic">
+    <div className="food-grid">
       {products.map((product, index) => (
         <ProductCard key={product.id} product={product} index={index} />
       ))}
