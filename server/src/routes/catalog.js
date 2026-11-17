@@ -4,8 +4,8 @@ import { serializeProduct } from "../utils/product.js";
 
 export const catalogRouter = Router();
 
-catalogRouter.get("/", (_req, res) => {
-  const shop = readShop();
+catalogRouter.get("/", async (_req, res) => {
+  const shop = await readShop();
   const products = shop.products
     .map((row) => serializeProduct(enrichProduct(row, shop.categories), { showUnavailable: shop.settings.show_unavailable }))
     .filter(Boolean)

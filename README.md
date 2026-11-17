@@ -23,7 +23,6 @@ Prices are in Sudanese Pound (SDG).
 ## Local setup
 
 ```bash
-npm install
 npm run setup
 npm run dev
 ```
@@ -33,7 +32,7 @@ Then open:
 - Shop: http://localhost:5173
 - Admin: http://localhost:5173/admin
 
-Use the admin username and password from your local `.env` file. Do not commit that file.
+Copy `.env.example` to `.env` and set your admin username and password. Do not commit `.env`.
 
 Stop the servers with `Ctrl+C`. That frees ports `5173` (shop) and `4000` (API).
 
@@ -47,17 +46,13 @@ Sign in at `/admin`.
 4. **Products** — add or edit sweets and photos.
 5. **Comments** — approve a comment before it appears on the shop.
 6. **Settings** — shop name, WhatsApp number, about text, TikTok.
+7. **Account** — change the admin username or password (needs the current password).
 
 Edits go live on the shop after you save or publish. Customers can send a special or festival request straight to WhatsApp.
 
-## Deploy (GitHub + Netlify + Render)
+## Deploy (Netlify only)
 
-The customer page and the admin page are one app. Upload the repo once.
-
-1. **Netlify** hosts the pages.
-2. **Render** or **Railway** hosts the API, because admin changes must be saved.
-
-Netlify alone cannot keep products, comments, or settings, because it only serves static files.
+Everything runs on Netlify: the shop pages, the admin API, and saved data (Netlify Blobs). No Render or Railway.
 
 ### 1) Push to GitHub
 
@@ -75,38 +70,23 @@ git branch -M main
 git push -u origin main
 ```
 
-Later code pushes to `main` rebuild the Netlify site automatically if the site is connected to that branch.
-
-### 2) Deploy the API on Render
-
-1. Open [render.com](https://render.com) and sign in with GitHub.
-2. **New +** → **Web Service** → choose the `RoOby` repo.
-3. Settings:
-   - **Root Directory:** `server`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-4. Environment variables:
-   - `CLIENT_ORIGIN` = the Netlify URL, for example `https://roobysweets.netlify.app`
-   - `JWT_SECRET` = a long secret string
-   - `ADMIN_USERNAME` and `ADMIN_PASSWORD` = your private admin login (set these only on the server)
-5. Create the service and copy the URL, for example `https://rooby-api.onrender.com`.
-
-The free Render plan sleeps after idle time and can wipe files. For lasting admin data, add a **Persistent Disk** or use Railway.
-
-### 3) Deploy the pages on Netlify
+### 2) Deploy on Netlify
 
 1. Open [netlify.com](https://netlify.com) and sign in with GitHub.
-2. **Add new site** → **Import an existing project** → choose the same `RoOby` repo.
-3. Build settings come from `netlify.toml`.
-4. Add environment variable:
-   - `VITE_API_URL` = the Render URL, for example `https://rooby-api.onrender.com`
-5. Deploy.
+2. **Add new site** → **Import an existing project** → choose the `RoOby` repo.
+3. Build settings come from `netlify.toml`. Leave **Publish directory** as `client/dist`.
+4. Do **not** set `VITE_API_URL`. The site calls `/api` on the same Netlify domain.
+5. Site environment variables:
+   - `JWT_SECRET` = a long secret string
+   - `ADMIN_USERNAME` = your private admin login
+   - `ADMIN_PASSWORD` = your private admin password
+6. Deploy.
 
-When the Netlify URL is ready, set `CLIENT_ORIGIN` on Render to that URL and restart the API.
+The first request creates shop data in Netlify Blobs using those admin credentials. Later admin account changes are stored in Blobs too.
 
 ### URLs after deploy
 
 - Shop: [https://roobysweets.netlify.app](https://roobysweets.netlify.app)
 - Admin: [https://roobysweets.netlify.app/admin](https://roobysweets.netlify.app/admin)
 
-Both talk to the same API. When admin changes products, news, special orders, festivals, or approved comments, customers see it on the shop.
+When admin changes products, news, special orders, festivals, or approved comments, customers see it on the same site.

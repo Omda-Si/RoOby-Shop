@@ -1,10 +1,24 @@
 {
   "name": "rooby",
   "private": true,
+  "type": "module",
   "scripts": {
-    "setup": "npm install --prefix server && npm install --prefix client",
+    "setup": "npm install && npm install --prefix server && npm install --prefix client",
     "dev": "concurrently -n api,web -c yellow,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "start": "npm run start --prefix server"
+    "start": "npm run start --prefix server",
+    "build": "npm run build --prefix client"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^9.1.2",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

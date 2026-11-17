@@ -3,7 +3,7 @@ import { updateShop } from "../store.js";
 
 export const publicRouter = Router();
 
-publicRouter.post("/feedback", (req, res) => {
+publicRouter.post("/feedback", async (req, res) => {
   const name = String(req.body?.name || "").trim();
   const comment = String(req.body?.comment || "").trim();
   const rating = Math.min(5, Math.max(1, Number(req.body?.rating || 5)));
@@ -12,7 +12,7 @@ publicRouter.post("/feedback", (req, res) => {
     return res.status(400).json({ error: "اكتب اسمك وتعليق واضح" });
   }
 
-  const saved = updateShop((shop) => {
+  const saved = await updateShop((shop) => {
     const feedback = {
       id: shop.nextFeedbackId++,
       name: name.slice(0, 40),
@@ -27,7 +27,7 @@ publicRouter.post("/feedback", (req, res) => {
   res.status(201).json(saved);
 });
 
-publicRouter.post("/orders", (req, res) => {
+publicRouter.post("/orders", async (req, res) => {
   const items = Array.isArray(req.body?.items) ? req.body.items : [];
   if (!items.length) {
     return res.status(400).json({ error: "الطلب فاضي" });
@@ -40,7 +40,7 @@ publicRouter.post("/orders", (req, res) => {
   }));
   const total = normalized.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const saved = updateShop((shop) => {
+  const saved = await updateShop((shop) => {
     const order = {
       id: shop.nextOrderId++,
       created_at: new Date().toISOString(),

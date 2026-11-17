@@ -8,10 +8,11 @@ export function signAdminToken(admin) {
 }
 
 function cookieOptions() {
+  const onNetlify = Boolean(process.env.NETLIFY);
   return {
     httpOnly: true,
-    sameSite: config.crossSite ? "none" : "lax",
-    secure: config.crossSite || process.env.NODE_ENV === "production",
+    sameSite: config.crossSite && !onNetlify ? "none" : "lax",
+    secure: config.crossSite || onNetlify || process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/"
   };

@@ -377,34 +377,74 @@ function normalizeShop(shop) {
       "في رمضان، العيد، أو أي مناسبة، نقدر نجهّز صواني وحلويات حسب طلبك. اكتبي المناسبة والكمية في واتساب.";
     changed = true;
   }
-  if (changed) writeShop(shop);
-  return shop;
+  return { shop, changed };
 }
 
-export function readShop() {
+export function useBlobStore() {
+  return Boolean(process.env.NETLIFY || process.env.USE_NETLIFY_BLOBS === "1");
+}
+
+async function shopBlobStore() {
+  const { getStore } = await import("@netlify/blobs");
+  return getStore("rooby-data");
+}
+
+export async function uploadBlobStore() {
+  const { getStore } = await import("@netlify/blobs");
+  return getStore("rooby-uploads");
+}
+
+export async function readShop() {
+  if (useBlobStore()) {
+    const store = await shopBlobStore();
+    let shop = await store.get("shop", { type: "json" });
+    if (!shop) {
+      shop = fs.existsSync(shopPath)
+        ? JSON.parse(fs.readFileSync(shopPath, "utf8"))
+        : defaultShop();
+      await store.setJSON("shop", shop);
+    }
+    const normalized = normalizeShop(shop);
+    if (normalized.changed) {
+      await writeShop(normalized.shop);
+    }
+    return normalized.shop;
+  }
+
   if (!fs.existsSync(shopPath)) {
     const created = defaultShop();
-    writeShop(created);
+    await writeShop(created);
     return created;
   }
-  return normalizeShop(JSON.parse(fs.readFileSync(shopPath, "utf8")));
+
+  const normalized = normalizeShop(JSON.parse(fs.readFileSync(shopPath, "utf8")));
+  if (normalized.changed) {
+    await writeShop(normalized.shop);
+  }
+  return normalized.shop;
 }
 
-export function writeShop(data) {
+export async function writeShop(data) {
+  if (useBlobStore()) {
+    const store = await shopBlobStore();
+    await store.setJSON("shop", data);
+    return;
+  }
+
   fs.mkdirSync(dataDir, { recursive: true });
   const tmp = `${shopPath}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
   fs.renameSync(tmp, shopPath);
 }
 
-export function updateShop(mutator) {
-  const shop = readShop();
-  const result = mutator(shop);
-  writeShop(shop);
+export async function updateShop(mutator) {
+  const shop = await readShop();
+  const result = await mutator(shop);
+  await writeShop(shop);
   return result === undefined ? shop : result;
 }
 
-export function enrichProduct(product, categories = readShop().categories) {
+export function enrichProduct(product, categories = []) {
   const category = categories.find((item) => Number(item.id) === Number(product.category_id));
   return {
     ...product,

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { requireAdmin, setAuthCookie, signAdminToken } from "../middleware/auth.js";
-import { uploadProductImage } from "../middleware/upload.js";
+import { persistUploadedImage, uploadProductImage } from "../middleware/upload.js";
 import { enrichProduct, readShop, updateShop } from "../store.js";
 import { serializeProduct, slugify } from "../utils/product.js";
 
@@ -37,17 +37,17 @@ function stamp(shop) {
   shop.settings.updated_at = shop.settings.availability_updated_at;
 }
 
-adminRouter.get("/products", (_req, res) => {
-  res.json(allProducts(readShop()));
+adminRouter.get("/products", async (_req, res) => {
+  res.json(allProducts(await readShop()));
 });
 
-adminRouter.post("/products", (req, res) => {
+adminRouter.post("/products", async (req, res) => {
   const data = productPayload(req.body);
   if (!data.name_ar || Number.isNaN(data.price)) {
     return res.status(400).json({ error: "اسم المنتج والسعر مطلوبين" });
   }
 
-  const created = updateShop((shop) => {
+  const created = await updateShop((shop) => {
     const product = {
       id: shop.nextProductId++,
       ...data,
@@ -60,9 +60,9 @@ adminRouter.post("/products", (req, res) => {
   res.status(201).json(created);
 });
 
-adminRouter.put("/products/:id", (req, res) => {
+adminRouter.put("/products/:id", async (req, res) => {
   const data = productPayload(req.body);
-  const updated = updateShop((shop) => {
+  const updated = await updateShop((shop) => {
     const product = shop.products.find((item) => String(item.id) === String(req.params.id));
     if (!product) return null;
     Object.assign(product, data, {
@@ -77,8 +77,8 @@ adminRouter.put("/products/:id", (req, res) => {
   res.json(updated);
 });
 
-adminRouter.delete("/products/:id", (req, res) => {
-  updateShop((shop) => {
+adminRouter.delete("/products/:id", async (req, res) => {
+  await updateShop((shop) => {
     shop.products = shop.products.filter((item) => String(item.id) !== String(req.params.id));
     stamp(shop);
   });
@@ -86,32 +86,37 @@ adminRouter.delete("/products/:id", (req, res) => {
 });
 
 adminRouter.post("/products/:id/image", (req, res) => {
-  uploadProductImage(req, res, (error) => {
-    if (error) {
-      return res.status(400).json({ error: error.message || "فشل رفع الصورة" });
-    }
-    if (!req.file) {
-      return res.status(400).json({ error: "اختَر صورة للمنتج" });
-    }
+  uploadProductImage(req, res, async (error) => {
+    try {
+      if (error) {
+        return res.status(400).json({ error: error.message || "فشل رفع الصورة" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: "اختَر صورة للمنتج" });
+      }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
-    const updated = updateShop((shop) => {
-      const product = shop.products.find((item) => String(item.id) === String(req.params.id));
-      if (!product) return null;
-      product.image_url = imageUrl;
-      stamp(shop);
-      return serializeProduct(enrichProduct(product, shop.categories), { includeHidden: true });
-    });
-    if (!updated) {
-      return res.status(404).json({ error: "المنتج غير موجود" });
+      const imageUrl = await persistUploadedImage(req.file);
+      const updated = await updateShop((shop) => {
+        const product = shop.products.find((item) => String(item.id) === String(req.params.id));
+        if (!product) return null;
+        product.image_url = imageUrl;
+        stamp(shop);
+        return serializeProduct(enrichProduct(product, shop.categories), { includeHidden: true });
+      });
+      if (!updated) {
+        return res.status(404).json({ error: "المنتج غير موجود" });
+      }
+      res.json(updated);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "فشل رفع الصورة" });
     }
-    res.json(updated);
   });
 });
 
-adminRouter.put("/today", (req, res) => {
+adminRouter.put("/today", async (req, res) => {
   const items = Array.isArray(req.body?.items) ? req.body.items : [];
-  const shop = updateShop((current) => {
+  const shop = await updateShop((current) => {
     for (const item of items) {
       const product = current.products.find((row) => String(row.id) === String(item.id));
       if (!product) continue;
@@ -147,16 +152,16 @@ adminRouter.put("/today", (req, res) => {
   res.json(allProducts(shop));
 });
 
-adminRouter.get("/categories", (_req, res) => {
-  res.json([...readShop().categories].sort((a, b) => a.sort_order - b.sort_order));
+adminRouter.get("/categories", async (_req, res) => {
+  res.json([...(await readShop()).categories].sort((a, b) => a.sort_order - b.sort_order));
 });
 
-adminRouter.post("/categories", (req, res) => {
+adminRouter.post("/categories", async (req, res) => {
   const name_ar = String(req.body?.name_ar || "").trim();
   if (!name_ar) {
     return res.status(400).json({ error: "اسم التصنيف مطلوب" });
   }
-  const created = updateShop((shop) => {
+  const created = await updateShop((shop) => {
     const category = {
       id: shop.nextCategoryId++,
       name_ar,
@@ -170,9 +175,9 @@ adminRouter.post("/categories", (req, res) => {
   res.status(201).json(created);
 });
 
-adminRouter.put("/categories/:id", (req, res) => {
+adminRouter.put("/categories/:id", async (req, res) => {
   const name_ar = String(req.body?.name_ar || "").trim();
-  const updated = updateShop((shop) => {
+  const updated = await updateShop((shop) => {
     const category = shop.categories.find((item) => String(item.id) === String(req.params.id));
     if (!category) return null;
     category.name_ar = name_ar;
@@ -187,8 +192,8 @@ adminRouter.put("/categories/:id", (req, res) => {
   res.json(updated);
 });
 
-adminRouter.delete("/categories/:id", (req, res) => {
-  updateShop((shop) => {
+adminRouter.delete("/categories/:id", async (req, res) => {
+  await updateShop((shop) => {
     shop.categories = shop.categories.filter((item) => String(item.id) !== String(req.params.id));
     shop.products = shop.products.map((product) =>
       String(product.category_id) === String(req.params.id) ? { ...product, category_id: null } : product
@@ -197,12 +202,12 @@ adminRouter.delete("/categories/:id", (req, res) => {
   res.json({ ok: true });
 });
 
-adminRouter.get("/feedbacks", (_req, res) => {
-  res.json([...readShop().feedbacks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+adminRouter.get("/feedbacks", async (_req, res) => {
+  res.json([...(await readShop()).feedbacks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
 });
 
-adminRouter.put("/feedbacks/:id/approve", (req, res) => {
-  const updated = updateShop((shop) => {
+adminRouter.put("/feedbacks/:id/approve", async (req, res) => {
+  const updated = await updateShop((shop) => {
     const feedback = shop.feedbacks.find((item) => String(item.id) === String(req.params.id));
     if (!feedback) return null;
     feedback.approved = true;
@@ -214,15 +219,15 @@ adminRouter.put("/feedbacks/:id/approve", (req, res) => {
   res.json(updated);
 });
 
-adminRouter.delete("/feedbacks/:id", (req, res) => {
-  updateShop((shop) => {
+adminRouter.delete("/feedbacks/:id", async (req, res) => {
+  await updateShop((shop) => {
     shop.feedbacks = shop.feedbacks.filter((item) => String(item.id) !== String(req.params.id));
   });
   res.json({ ok: true });
 });
 
-adminRouter.get("/analytics", (_req, res) => {
-  const orders = [...readShop().orders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+adminRouter.get("/analytics", async (_req, res) => {
+  const orders = [...(await readShop()).orders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfWeek = new Date(startOfDay);
@@ -295,12 +300,12 @@ function buildMonths(orders, count) {
   });
 }
 
-adminRouter.get("/settings", (_req, res) => {
-  res.json(readShop().settings);
+adminRouter.get("/settings", async (_req, res) => {
+  res.json((await readShop()).settings);
 });
 
-adminRouter.put("/settings", (req, res) => {
-  const saved = updateShop((shop) => {
+adminRouter.put("/settings", async (req, res) => {
+  const saved = await updateShop((shop) => {
     Object.assign(shop.settings, {
       shop_name: String(req.body?.shop_name || "RoOby").trim(),
       tagline: String(req.body?.tagline || "").trim(),
@@ -344,13 +349,13 @@ adminRouter.put("/account", async (req, res) => {
     return res.status(400).json({ error: "تأكيد كلمة المرور غير مطابق" });
   }
 
-  const shop = readShop();
+  const shop = await readShop();
   const admin = shop.admin;
   if (!admin || !(await bcrypt.compare(currentPassword, admin.password_hash))) {
     return res.status(401).json({ error: "كلمة المرور الحالية غير صحيحة" });
   }
 
-  const updated = updateShop((current) => {
+  const updated = await updateShop((current) => {
     current.admin.username = newUsername;
     if (newPassword) {
       current.admin.password_hash = bcrypt.hashSync(newPassword, 10);

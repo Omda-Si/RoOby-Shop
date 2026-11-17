@@ -31,7 +31,7 @@ authRouter.post("/login", async (req, res) => {
     return res.status(400).json({ error: "اكتب اسم المستخدم وكلمة المرور" });
   }
 
-  const admin = readShop().admin;
+  const admin = (await readShop()).admin;
   if (!admin || admin.username !== username || !(await bcrypt.compare(password, admin.password_hash))) {
     return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
   }
