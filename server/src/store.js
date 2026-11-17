@@ -1,10 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import bcrypt from "bcryptjs";
 import { config } from "./config.js";
 
-const dataDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../data");
+const dataDir = config.dataDir;
 const shopPath = path.join(dataDir, "shop.json");
 
 function now() {

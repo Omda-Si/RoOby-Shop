@@ -4,7 +4,9 @@ import multer from "multer";
 import { config } from "../config.js";
 import { uploadBlobStore, useBlobStore } from "../store.js";
 
-fs.mkdirSync(config.uploadDir, { recursive: true });
+if (!useBlobStore()) {
+  fs.mkdirSync(config.uploadDir, { recursive: true });
+}
 
 export const uploadProductImage = multer({
   storage: multer.memoryStorage(),
