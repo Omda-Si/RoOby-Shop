@@ -4,24 +4,41 @@ import { readShop } from "../store.js";
 import { clearAuthCookie, requireAdmin, setAuthCookie, signAdminToken } from "../middleware/auth.js";
 
 const loginAttempts = new Map();
+const WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILED = 10;
 
-function tooManyAttempts(ip) {
-  const now = Date.now();
-  const record = loginAttempts.get(ip) || { count: 0, resetAt: now + 15 * 60 * 1000 };
-  if (now > record.resetAt) {
-    record.count = 0;
-    record.resetAt = now + 15 * 60 * 1000;
+function clientKey(req) {
+  const forwarded = String(req.headers["x-nf-client-connection-ip"] || req.headers["x-forwarded-for"] || "")
+    .split(",")[0]
+    .trim();
+  return forwarded || req.ip || "local";
+}
+
+function isLocked(key) {
+  const record = loginAttempts.get(key);
+  if (!record) return false;
+  if (Date.now() > record.resetAt) {
+    loginAttempts.delete(key);
+    return false;
   }
-  record.count += 1;
-  loginAttempts.set(ip, record);
-  return record.count > 8;
+  return record.count >= MAX_FAILED;
+}
+
+function recordFailure(key) {
+  const now = Date.now();
+  const record = loginAttempts.get(key);
+  if (!record || now > record.resetAt) {
+    loginAttempts.set(key, { count: 1, resetAt: now + WINDOW_MS });
+  } else {
+    record.count += 1;
+  }
 }
 
 export const authRouter = Router();
 
 authRouter.post("/login", async (req, res) => {
-  const ip = req.ip || "local";
-  if (tooManyAttempts(ip)) {
+  const key = clientKey(req);
+  if (isLocked(key)) {
     return res.status(429).json({ error: "محاولات كثيرة. انتظر شوية وجرّب تاني." });
   }
 
@@ -33,9 +50,11 @@ authRouter.post("/login", async (req, res) => {
 
   const admin = (await readShop()).admin;
   if (!admin || admin.username !== username || !(await bcrypt.compare(password, admin.password_hash))) {
+    recordFailure(key);
     return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
   }
 
+  loginAttempts.delete(key);
   const token = signAdminToken(admin);
   setAuthCookie(res, token);
   return res.json({ username: admin.username });
