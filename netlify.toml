@@ -8,7 +8,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@netlify/blobs", "express", "multer"]
+  external_node_modules = ["express", "multer"]
   included_files = ["data/**", "server/src/**"]
 
 [[headers]]
