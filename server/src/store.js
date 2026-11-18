@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import bcrypt from "bcryptjs";
-import { config } from "./config.js";
+import { config, onNetlify } from "./config.js";
 
 const dataDir = config.dataDir;
 const shopPath = path.join(dataDir, "shop.json");
@@ -381,7 +381,7 @@ function normalizeShop(shop) {
 }
 
 export function useBlobStore() {
-  return Boolean(process.env.NETLIFY || process.env.USE_NETLIFY_BLOBS === "1");
+  return onNetlify || process.env.USE_NETLIFY_BLOBS === "1";
 }
 
 async function shopBlobStore() {

@@ -26,7 +26,9 @@ export const projectRoot = resolveProjectRoot();
 dotenv.config({ path: path.join(projectRoot, ".env") });
 
 const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
-const onNetlify = Boolean(process.env.NETLIFY || process.env.LAMBDA_TASK_ROOT);
+export const onNetlify = Boolean(
+  process.env.NETLIFY || process.env.LAMBDA_TASK_ROOT || process.env.AWS_LAMBDA_FUNCTION_NAME
+);
 
 export const config = {
   port: Number(process.env.PORT || 4000),

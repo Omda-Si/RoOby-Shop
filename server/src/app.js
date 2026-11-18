@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
-import { config } from "./config.js";
+import { config, onNetlify } from "./config.js";
 import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { catalogRouter } from "./routes/catalog.js";
@@ -11,7 +11,6 @@ import { uploadBlobStore, useBlobStore } from "./store.js";
 
 export function createApp() {
   const app = express();
-  const onNetlify = Boolean(process.env.NETLIFY);
 
   app.use(
     helmet({
@@ -79,7 +78,8 @@ export function createApp() {
     res.json({
       ok: true,
       shop: "RoOby",
-      build: "auth-env-sync-2",
+      build: "auth-env-sync-3",
+      blobs: useBlobStore(),
       env: {
         admin_username: JSON.stringify(process.env.ADMIN_USERNAME ?? null),
         admin_password_length: String(process.env.ADMIN_PASSWORD ?? "").length,

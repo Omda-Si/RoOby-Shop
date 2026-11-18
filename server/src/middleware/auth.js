@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { config } from "../config.js";
+import { config, onNetlify } from "../config.js";
 
 export function signAdminToken(admin) {
   return jwt.sign({ sub: admin.id, username: admin.username }, config.jwtSecret, {
@@ -8,7 +8,6 @@ export function signAdminToken(admin) {
 }
 
 function cookieOptions() {
-  const onNetlify = Boolean(process.env.NETLIFY);
   return {
     httpOnly: true,
     sameSite: config.crossSite && !onNetlify ? "none" : "lax",
