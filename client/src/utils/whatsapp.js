@@ -7,9 +7,9 @@ export function buildCustomWhatsAppUrl(phone, message) {
 
 export function specialOrderMessage(shopName, note) {
   return [
-    `السلام عليكم، أبي أطلب طلب خاص من ${shopName}`,
+    `السلام عليكم، عايز أطلب طلب خاص من ${shopName}`,
     "",
-    note || "أبي كيكة أو صينية حسب مناسبتي.",
+    note || "عايز كيكة أو صينية حسب مناسبتي.",
     "",
     "النوع:",
     "الكمية:",
@@ -20,7 +20,7 @@ export function specialOrderMessage(shopName, note) {
 
 export function festivalOrderMessage(shopName, title, note) {
   return [
-    `السلام عليكم، أبي أسأل عن حلويات ${title || "المناسبة"} من ${shopName}`,
+    `السلام عليكم، عايز أسأل عن حلويات ${title || "المناسبة"} من ${shopName}`,
     "",
     note || "",
     "",
@@ -33,7 +33,7 @@ export function buildWhatsAppUrl(phone, shopName, items) {
   const cleanPhone = String(phone || "").replace(/\D/g, "");
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const lines = [
-    `السلام عليكم، أبي أطلب من ${shopName} 🧡`,
+    `السلام عليكم، عايز أطلب من ${shopName} 🧡`,
     "",
     ...items.map((item) => `• ${item.name_ar} × ${item.qty} — ${formatPrice(item.price * item.qty)}`),
     "",
