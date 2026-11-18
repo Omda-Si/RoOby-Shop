@@ -76,7 +76,17 @@ export function createApp() {
   }
 
   app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, shop: "RoOby" });
+    res.json({
+      ok: true,
+      shop: "RoOby",
+      build: "auth-env-sync-1",
+      env: {
+        admin_username: Boolean(process.env.ADMIN_USERNAME),
+        admin_password: Boolean(process.env.ADMIN_PASSWORD),
+        jwt_secret: Boolean(process.env.JWT_SECRET),
+        admin_reset: process.env.ADMIN_RESET === "1"
+      }
+    });
   });
 
   app.use("/api/auth", authRouter);
