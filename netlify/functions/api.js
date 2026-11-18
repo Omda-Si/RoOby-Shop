@@ -10,6 +10,12 @@ const run = serverless(app, {
 
 export const handler = async (event, context) => {
   // Lets Netlify Blobs find its site and token inside a Lambda-style function.
-  connectLambda(event);
+  if (event?.blobs) {
+    try {
+      connectLambda(event);
+    } catch (error) {
+      console.error("connectLambda failed", error);
+    }
+  }
   return run(event, context);
 };
