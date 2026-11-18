@@ -426,7 +426,7 @@ export async function readShop() {
         : defaultShop();
       applyEnvAdmin(shop, { force: true });
       await store.setJSON("shop", shop);
-    } else if (applyEnvAdmin(shop, { force: process.env.ADMIN_RESET === "1" })) {
+    } else if (applyEnvAdmin(shop)) {
       await writeShop(shop);
     }
     const normalized = normalizeShop(shop);
