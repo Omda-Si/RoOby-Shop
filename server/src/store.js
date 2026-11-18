@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import bcrypt from "bcryptjs";
@@ -393,13 +394,26 @@ export async function uploadBlobStore() {
   return getStore("rooby-uploads");
 }
 
-function applyEnvAdmin(shop) {
+function envSignature() {
+  return crypto
+    .createHash("sha256")
+    .update(`${config.adminUsername}:${config.adminPassword}`)
+    .digest("hex");
+}
+
+// Netlify env vars are the source of truth until the owner changes the account in Settings.
+function applyEnvAdmin(shop, { force = false } = {}) {
+  const signature = envSignature();
+  if (!force && (shop.admin?.custom || shop.admin?.env_sig === signature)) {
+    return false;
+  }
   shop.admin = {
     id: shop.admin?.id || 1,
     username: config.adminUsername,
-    password_hash: bcrypt.hashSync(config.adminPassword, 10)
+    password_hash: bcrypt.hashSync(config.adminPassword, 10),
+    env_sig: signature
   };
-  return shop;
+  return true;
 }
 
 export async function readShop() {
@@ -410,10 +424,9 @@ export async function readShop() {
       shop = fs.existsSync(shopPath)
         ? JSON.parse(fs.readFileSync(shopPath, "utf8"))
         : defaultShop();
-      applyEnvAdmin(shop);
+      applyEnvAdmin(shop, { force: true });
       await store.setJSON("shop", shop);
-    } else if (process.env.ADMIN_RESET === "1") {
-      applyEnvAdmin(shop);
+    } else if (applyEnvAdmin(shop, { force: process.env.ADMIN_RESET === "1" })) {
       await writeShop(shop);
     }
     const normalized = normalizeShop(shop);

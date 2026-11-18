@@ -357,6 +357,7 @@ adminRouter.put("/account", async (req, res) => {
 
   const updated = await updateShop((current) => {
     current.admin.username = newUsername;
+    current.admin.custom = true;
     if (newPassword) {
       current.admin.password_hash = bcrypt.hashSync(newPassword, 10);
     }
