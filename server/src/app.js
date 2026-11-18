@@ -79,10 +79,10 @@ export function createApp() {
     res.json({
       ok: true,
       shop: "RoOby",
-      build: "auth-env-sync-1",
+      build: "auth-env-sync-2",
       env: {
-        admin_username: Boolean(process.env.ADMIN_USERNAME),
-        admin_password: Boolean(process.env.ADMIN_PASSWORD),
+        admin_username: JSON.stringify(process.env.ADMIN_USERNAME ?? null),
+        admin_password_length: String(process.env.ADMIN_PASSWORD ?? "").length,
         jwt_secret: Boolean(process.env.JWT_SECRET),
         admin_reset: process.env.ADMIN_RESET === "1"
       }
