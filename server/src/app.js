@@ -25,6 +25,30 @@ export function createApp() {
     })
   );
   app.use(cookieParser());
+  // On Netlify the body can arrive already read (Buffer/string), so express.json skips it.
+  app.use((req, _res, next) => {
+    const type = String(req.headers["content-type"] || "");
+    if (!type.includes("application/json")) return next();
+
+    let raw = null;
+    if (Buffer.isBuffer(req.body)) raw = req.body.toString("utf8");
+    else if (typeof req.body === "string") raw = req.body;
+    else if (typeof req.apiGateway?.event?.body === "string" && (req.body === undefined || req.body === null)) {
+      const event = req.apiGateway.event;
+      raw = event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf8") : event.body;
+    }
+
+    if (raw !== null) {
+      try {
+        req.body = raw ? JSON.parse(raw) : {};
+        req._body = true;
+      } catch {
+        req.body = {};
+        req._body = true;
+      }
+    }
+    next();
+  });
   app.use(express.json({ limit: "2mb" }));
 
   if (useBlobStore()) {
